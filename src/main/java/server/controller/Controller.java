@@ -18,6 +18,8 @@ public class Controller
 {
     Logger requestLogger = LoggerFactory.getLogger("request-logger");
 
+    Logger todoLogger= LoggerFactory.getLogger("todo-logger");
+
 
     int counter=1;
     private List<Todo> todoList=new ArrayList<>();
@@ -25,6 +27,7 @@ public class Controller
     @GetMapping("/todo/health")
     public String Health()
     {
+        ThreadContext.put("counter", String.valueOf(counter));
         requestLogger.info("Incoming request | #"+ counter +" | resource: /todo/health | HTTP Verb GET");
         requestLogger.debug("request #"+counter+" duration: "+new Date().getTime()+"ms");
         counter++;
@@ -38,23 +41,31 @@ public class Controller
         String title =requestBody.get("title");
         Long dueDate =Long.valueOf(requestBody.get("dueDate"));
 
-
+        ThreadContext.put("counter", String.valueOf(counter));
         requestLogger.info("Incoming request | #"+ counter +" | resource: /todo | HTTP Verb POST");
         requestLogger.debug("request #"+counter+" duration: "+new Date().getTime()+"ms");
         counter++;
 
         if(Utilities.checkIfExistByTitle(todoList,title))
         {
-            bodyResponse.put("errorMessage","Error: TODO with the title "
-                    + title+ " already exists in the system");
+            String errorMessage="Error: TODO with the title " + title+ " already exists in the system";
+            bodyResponse.put("errorMessage",errorMessage);
+            todoLogger.error("Server encountered an error ! message: "+errorMessage);
             return new ResponseEntity<>(bodyResponse, HttpStatus.CONFLICT);
         }
         if(dueDate.compareTo(new Date().getTime())<0)
         {
-            bodyResponse.put("errorMessage","Error: Can’t create new TODO that its due date is in the past");
+            String errorMessage="Error: Can’t create new TODO that its due date is in the past";
+            bodyResponse.put("errorMessage",errorMessage);
+            todoLogger.error("Server encountered an error ! message: "+errorMessage);
             return new ResponseEntity<>(bodyResponse, HttpStatus.CONFLICT);
         }
         Todo todo =new Todo(title,requestBody.get("content"),dueDate);
+
+        todoLogger.info("Creating new TODO with Title ["+title+"]");
+        todoLogger.debug("Currently there are "+todoList.size()+" Todos in the system. " +
+                "New TODO will be assigned with id "+todo.getId());
+
         todoList.add(todo);
         bodyResponse.put("result",todo.getId());
         return  new ResponseEntity<>(bodyResponse, HttpStatus.OK);
@@ -67,6 +78,7 @@ public class Controller
     {
         Map<String,Integer> bodyResponse=new HashMap<>();
 
+        ThreadContext.put("counter", String.valueOf(counter));
         requestLogger.info("Incoming request | #"+ counter +" | resource: /todo/size | HTTP Verb GET");
         requestLogger.debug("request #"+counter+" duration: "+new Date().getTime()+"ms");
         counter++;
@@ -74,12 +86,18 @@ public class Controller
         if(status.equals("ALL"))
         {
             bodyResponse.put("result",todoList.size());
+            todoLogger.info("Total TODOs count for state ALL is "+todoList.size());
             return new ResponseEntity<>(bodyResponse,HttpStatus.OK);
         }
         if(Utilities.STATUSES.contains(status))
         {
-            return Utilities.countTODO(todoList,status);
+            ResponseEntity<Map<String,Integer>> responseEntity=Utilities.countTODO(todoList,status);
+            int size=responseEntity.getBody().get("result");
+            todoLogger.info("Total TODOs count for state "+status+" is "+size);
+            return responseEntity;
         }
+
+        //need to ask aviad what to log in this case
         return new ResponseEntity<>(null,HttpStatus.BAD_REQUEST);
     }
 
@@ -90,7 +108,7 @@ public class Controller
     {
         List<Todo> bodyResponse=new ArrayList<>();
 
-
+        ThreadContext.put("counter", String.valueOf(counter));
         requestLogger.info("Incoming request | #"+ counter +" | resource: /todo/content | HTTP Verb GET");
         requestLogger.debug("request #"+counter+" duration: "+new Date().getTime()+"ms");
         counter++;
@@ -121,6 +139,7 @@ public class Controller
     @PutMapping("/todo")
     public ResponseEntity<Map<String,String>> UpdateTODOStatus(@RequestParam Integer id,@RequestParam String status)
     {
+        ThreadContext.put("counter", String.valueOf(counter));
         requestLogger.info("Incoming request | #"+ counter +" | resource: /todo/ | HTTP Verb PUT");
         requestLogger.debug("request #"+counter+" duration: "+new Date().getTime()+"ms");
         counter++;
@@ -152,6 +171,7 @@ public class Controller
         Map<String,Object> bodyResponse=new HashMap<>();
         Todo todo =Utilities.FindTODObyId(todoList,id);
 
+        ThreadContext.put("counter", String.valueOf(counter));
         requestLogger.info("Incoming request | #"+ counter +" | resource: /todo/ | HTTP Verb DELETE");
         requestLogger.debug("request #"+counter+" duration: "+new Date().getTime()+"ms");
         counter++;

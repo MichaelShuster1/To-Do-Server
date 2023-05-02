@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN" monitorInterval="30">
     <Properties>
-        <Property name="LOG_PATTERN">%d{dd-mm-yyyy hh:mm:ss.sss} %p: %m%n</Property>
+        <Property name="LOG_PATTERN">%d{dd-MM-yyyy HH:mm:ss.sss} %p: %m | request #%X{counter}%n</Property>
     </Properties>
 
     <Appenders>
@@ -9,10 +9,13 @@
             <PatternLayout pattern="${LOG_PATTERN}" />
         </Console>
         <File name="FileAppender1" fileName="logs/requests.log">
-            <PatternLayout>
-                <Pattern>%d{dd-mm-yyyy hh:mm:ss.sss} %p": %m%n</Pattern>
-            </PatternLayout>
+            <PatternLayout pattern="${LOG_PATTERN}"/>
         </File>
+
+        <File name="FileAppender2" fileName="logs/todos.log">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </File>
+
     </Appenders>
 
     <Loggers>
@@ -20,6 +23,11 @@
             <AppenderRef ref="Console" />
             <AppenderRef ref="FileAppender1" />
         </Logger>
+
+        <Logger name="todo-logger" level="info" additivity="false">
+            <AppenderRef ref="FileAppender2" />
+        </Logger>
+
         <Root level="fatal">
             <AppenderRef ref="Console" />
         </Root>
