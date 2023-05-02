@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30">
+    <Properties>
+        <Property name="LOG_PATTERN">%d{dd-mm-yyyy hh:mm:ss.sss} %p: %m%n</Property>
+    </Properties>
+
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${LOG_PATTERN}" />
+        </Console>
+        <File name="FileAppender1" fileName="logs/requests.log">
+            <PatternLayout>
+                <Pattern>%d{dd-mm-yyyy hh:mm:ss.sss} %p": %m%n</Pattern>
+            </PatternLayout>
+        </File>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="request-logger" level="info" additivity="false">
+            <AppenderRef ref="Console" />
+            <AppenderRef ref="FileAppender1" />
+        </Logger>
+        <Root level="fatal">
+            <AppenderRef ref="Console" />
+        </Root>
+    </Loggers>
+</Configuration>
