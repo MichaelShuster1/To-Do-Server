@@ -55,14 +55,14 @@ public class Controller
         {
             String errorMessage="Error: TODO with the title " + title+ " already exists in the system";
             bodyResponse.put("errorMessage",errorMessage);
-            todoLogger.error("Server encountered an error ! message: "+errorMessage);
+            todoLogger.error(errorMessage);
             return new ResponseEntity<>(bodyResponse, HttpStatus.CONFLICT);
         }
         if(dueDate.compareTo(new Date().getTime())<0)
         {
             String errorMessage="Error: Can’t create new TODO that its due date is in the past";
             bodyResponse.put("errorMessage",errorMessage);
-            todoLogger.error("Server encountered an error ! message: "+errorMessage);
+            todoLogger.error(errorMessage);
             return new ResponseEntity<>(bodyResponse, HttpStatus.CONFLICT);
         }
         Todo todo =new Todo(title,requestBody.get("content"),dueDate);
@@ -102,7 +102,6 @@ public class Controller
             return responseEntity;
         }
 
-        todoLogger.error("");
         return new ResponseEntity<>(null,HttpStatus.BAD_REQUEST);
     }
 
@@ -120,7 +119,6 @@ public class Controller
 
         if( ( !Utilities.STATUSES.contains(status) && !status.equals("ALL") ) || ( sortBy!=null && !Utilities.SORTS_BY.contains(sortBy) ) )
         {
-            todoLogger.error("");
             return new ResponseEntity<>(null,HttpStatus.BAD_REQUEST);
         }
 
@@ -159,7 +157,6 @@ public class Controller
         todoLogger.info("Update TODO id ["+id+"] state to "+status);
 
         if(!Utilities.STATUSES.contains(status)) {
-            todoLogger.error("");
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
 
@@ -243,13 +240,16 @@ public class Controller
 
         if(loggerLevel.equals("DEBUG")||loggerLevel.equals("INFO")||loggerLevel.equals("ERROR"))
         {
-            if(loggerName.equals("request-logger"))
-                res=requestLogger.getLevel().toString().toUpperCase();
-            if(loggerName.equals("todo-logger"))
-                res=todoLogger.getLevel().toString().toUpperCase();
-
-            if(!res.equals(""))
+            if(loggerName.equals("request-logger")||loggerName.equals("todo-logger"))
+            {
                 Configurator.setLevel(loggerName, Level.getLevel(loggerLevel));
+
+                if(loggerName.equals("request-logger"))
+                    res=requestLogger.getLevel().toString().toUpperCase();
+
+                if(loggerName.equals("todo-logger"))
+                    res=todoLogger.getLevel().toString().toUpperCase();
+            }
             else
                 res = "Error:logger not found";
         }
