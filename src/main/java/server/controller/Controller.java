@@ -32,9 +32,10 @@ public class Controller
     @GetMapping("/todo/health")
     public String Health()
     {
+        long start=System.currentTimeMillis();
         ThreadContext.put("counter", String.valueOf(counter));
         requestLogger.info("Incoming request | #"+ counter +" | resource: /todo/health | HTTP Verb GET");
-        requestLogger.debug("request #"+counter+" duration: "+new Date().getTime()+"ms");
+        requestLogger.debug("request #"+counter+" duration: "+(System.currentTimeMillis()-start)+"ms");
         counter++;
         return "OK";
     }
@@ -42,13 +43,13 @@ public class Controller
     @PostMapping(value = "/todo",consumes = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<Map<String,Object>> CreateNewTODO(@RequestBody Map<String,String> requestBody)
     {
+        long start=System.currentTimeMillis();
         Map<String,Object> bodyResponse=new HashMap<>();
         String title =requestBody.get("title");
         Long dueDate =Long.valueOf(requestBody.get("dueDate"));
 
         ThreadContext.put("counter", String.valueOf(counter));
         requestLogger.info("Incoming request | #"+ counter +" | resource: /todo | HTTP Verb POST");
-        requestLogger.debug("request #"+counter+" duration: "+new Date().getTime()+"ms");
         counter++;
 
         if(Utilities.checkIfExistByTitle(todoList,title))
@@ -56,6 +57,7 @@ public class Controller
             String errorMessage="Error: TODO with the title " + title+ " already exists in the system";
             bodyResponse.put("errorMessage",errorMessage);
             todoLogger.error(errorMessage);
+            requestLogger.debug("request #"+counter+" duration: "+(System.currentTimeMillis()-start)+"ms");
             return new ResponseEntity<>(bodyResponse, HttpStatus.CONFLICT);
         }
         if(dueDate.compareTo(new Date().getTime())<0)
@@ -63,6 +65,7 @@ public class Controller
             String errorMessage="Error: Can’t create new TODO that its due date is in the past";
             bodyResponse.put("errorMessage",errorMessage);
             todoLogger.error(errorMessage);
+            requestLogger.debug("request #"+counter+" duration: "+(System.currentTimeMillis()-start)+"ms");
             return new ResponseEntity<>(bodyResponse, HttpStatus.CONFLICT);
         }
         Todo todo =new Todo(title,requestBody.get("content"),dueDate);
@@ -73,6 +76,7 @@ public class Controller
 
         todoList.add(todo);
         bodyResponse.put("result",todo.getId());
+        requestLogger.debug("request #"+counter+" duration: "+(System.currentTimeMillis()-start)+"ms");
         return  new ResponseEntity<>(bodyResponse, HttpStatus.OK);
     }
 
@@ -81,17 +85,18 @@ public class Controller
     @GetMapping("/todo/size")
     public ResponseEntity<Map<String,Integer>> getTODOsCount(@RequestParam String status)
     {
+        long start=System.currentTimeMillis();
         Map<String,Integer> bodyResponse=new HashMap<>();
 
         ThreadContext.put("counter", String.valueOf(counter));
         requestLogger.info("Incoming request | #"+ counter +" | resource: /todo/size | HTTP Verb GET");
-        requestLogger.debug("request #"+counter+" duration: "+new Date().getTime()+"ms");
         counter++;
 
         if(status.equals("ALL"))
         {
             bodyResponse.put("result",todoList.size());
             todoLogger.info("Total TODOs count for state ALL is "+todoList.size());
+            requestLogger.debug("request #"+counter+" duration: "+(System.currentTimeMillis()-start)+"ms");
             return new ResponseEntity<>(bodyResponse,HttpStatus.OK);
         }
         if(Utilities.STATUSES.contains(status))
@@ -99,6 +104,7 @@ public class Controller
             ResponseEntity<Map<String,Integer>> responseEntity=Utilities.countTODO(todoList,status);
             int size=responseEntity.getBody().get("result");
             todoLogger.info("Total TODOs count for state "+status+" is "+size);
+            requestLogger.debug("request #"+counter+" duration: "+(System.currentTimeMillis()-start)+"ms");
             return responseEntity;
         }
 
@@ -110,11 +116,11 @@ public class Controller
     @GetMapping("/todo/content")
     public ResponseEntity<List<Todo>> getTODOsData(@RequestParam String status,@RequestParam(required = false) String sortBy)
     {
+        long start=System.currentTimeMillis();
         List<Todo> bodyResponse=new ArrayList<>();
 
         ThreadContext.put("counter", String.valueOf(counter));
         requestLogger.info("Incoming request | #"+ counter +" | resource: /todo/content | HTTP Verb GET");
-        requestLogger.debug("request #"+counter+" duration: "+new Date().getTime()+"ms");
         counter++;
 
         if( ( !Utilities.STATUSES.contains(status) && !status.equals("ALL") ) || ( sortBy!=null && !Utilities.SORTS_BY.contains(sortBy) ) )
@@ -143,15 +149,16 @@ public class Controller
         todoLogger.info("Extracting todos content. Filter: "+status+" | Sorting by: "+sortBy);
         todoLogger.debug("There are a total of "+todoList.size()+" todos in the system. " +
                 "The result holds "+bodyResponse.size()+" todos");
+        requestLogger.debug("request #"+counter+" duration: "+(System.currentTimeMillis()-start)+"ms");
         return new ResponseEntity<>(bodyResponse,HttpStatus.OK);
     }
 
     @PutMapping("/todo")
     public ResponseEntity<Map<String,String>> UpdateTODOStatus(@RequestParam Integer id,@RequestParam String status)
     {
+        long start=System.currentTimeMillis();
         ThreadContext.put("counter", String.valueOf(counter));
         requestLogger.info("Incoming request | #"+ counter +" | resource: /todo | HTTP Verb PUT");
-        requestLogger.debug("request #"+counter+" duration: "+new Date().getTime()+"ms");
         counter++;
 
         todoLogger.info("Update TODO id ["+id+"] state to "+status);
@@ -170,6 +177,7 @@ public class Controller
         {
             bodyResponse.put("errorMessage","Error: no such TODO with id "+id);
             todoLogger.error("Error: no such TODO with id "+id);
+            requestLogger.debug("request #"+counter+" duration: "+(System.currentTimeMillis()-start)+"ms");
             return new ResponseEntity<>(bodyResponse,HttpStatus.NOT_FOUND);
         }
 
@@ -177,41 +185,44 @@ public class Controller
         todo.setStatus(status);
         bodyResponse.put("result",oldStatus);
         todoLogger.debug("Todo id ["+id+"] state change: "+oldStatus+" --> "+status);
+        requestLogger.debug("request #"+counter+" duration: "+(System.currentTimeMillis()-start)+"ms");
         return new ResponseEntity<>(bodyResponse,HttpStatus.OK);
     }
 
     @DeleteMapping("/todo")
     public ResponseEntity<Map<String,Object>> DeleteTODO(@RequestParam Integer id)
     {
+        long start=System.currentTimeMillis();
         Map<String,Object> bodyResponse=new HashMap<>();
         Todo todo =Utilities.FindTODObyId(todoList,id);
 
         ThreadContext.put("counter", String.valueOf(counter));
         requestLogger.info("Incoming request | #"+ counter +" | resource: /todo | HTTP Verb DELETE");
-        requestLogger.debug("request #"+counter+" duration: "+new Date().getTime()+"ms");
         counter++;
 
         if(todo==null)
         {
             bodyResponse.put("errorMessage","Error: no such TODO with id "+id);
             todoLogger.error("Error: no such TODO with id "+id);
+            requestLogger.debug("request #"+counter+" duration: "+(System.currentTimeMillis()-start)+"ms");
             return new ResponseEntity<>(bodyResponse,HttpStatus.NOT_FOUND);
         }
         todoLogger.info("Removing todo id "+id);
         todoList.remove(todo);
         todoLogger.debug("After removing todo id ["+id+"] there are "+todoList.size()+" TODOs in the system");
         bodyResponse.put("result",todoList.size());
+        requestLogger.debug("request #"+counter+" duration: "+(System.currentTimeMillis()-start)+"ms");
         return new ResponseEntity<>(bodyResponse,HttpStatus.OK);
     }
 
     @GetMapping("/logs/level")
     public String getLoggerLevel(@RequestParam(name="logger-name") String loggerName)
     {
+        long start=System.currentTimeMillis();
         String res="";
 
         ThreadContext.put("counter", String.valueOf(counter));
-        requestLogger.info("Incoming request | #"+ counter +" | resource: /logs/level | HTTP Verb GET");
-        requestLogger.debug("request #"+counter+" duration: "+new Date().getTime()+"ms");
+        requestLogger.info("Incoming request | #"+ counter +" | resource: /logs/level | HTTP Verb GET");;
         counter++;
 
 
@@ -223,6 +234,7 @@ public class Controller
 
         else res="Error:logger not found";
 
+        requestLogger.debug("request #"+counter+" duration: "+(System.currentTimeMillis()-start)+"ms");
         return res;
     }
 
@@ -230,11 +242,11 @@ public class Controller
     @PutMapping("/logs/level")
     public String setLoggerLevel(@RequestParam(name="logger-name") String loggerName,@RequestParam(name="logger-level") String loggerLevel)
     {
+        long start=System.currentTimeMillis();
         String res="";
 
         ThreadContext.put("counter", String.valueOf(counter));
         requestLogger.info("Incoming request | #"+ counter +" | resource: /logs/level | HTTP Verb PUT");
-        requestLogger.debug("request #"+counter+" duration: "+new Date().getTime()+"ms");
         counter++;
 
 
@@ -258,7 +270,7 @@ public class Controller
             res="Error:level not defined";
         }
 
-
+        requestLogger.debug("request #"+counter+" duration: "+(System.currentTimeMillis()-start)+"ms");
         return res;
     }
 }
