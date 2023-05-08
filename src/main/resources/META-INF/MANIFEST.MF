@@ -1,3 +1,19 @@
 Manifest-Version: 1.0
 Main-Class: server.ServerApplication
+Class-Path: lib\spring-core-6.0.8.jar lib\jackson-core-2.14.2.jar lib\to
+ mcat-embed-core-10.1.8.jar lib\spring-webmvc-6.0.8.jar lib\spring-beans
+ -6.0.8.jar lib\tomcat-embed-el-10.1.8.jar lib\jakarta.annotation-api-2.
+ 1.1.jar lib\spring-boot-starter-json-3.0.6.jar lib\spring-context-6.0.8
+ .jar lib\micrometer-commons-1.10.6.jar lib\log4j-core-2.19.0.jar lib\ja
+ ckson-databind-2.14.2.jar lib\snakeyaml-1.33.jar lib\micrometer-observa
+ tion-1.10.6.jar lib\spring-boot-starter-web-3.0.6.jar lib\spring-boot-a
+ utoconfigure-3.0.6.jar lib\log4j-jul-2.19.0.jar lib\spring-expression-6
+ .0.8.jar lib\tomcat-embed-websocket-10.1.8.jar lib\slf4j-api-2.0.7.jar 
+ lib\spring-boot-starter-3.0.6.jar lib\spring-jcl-6.0.8.jar lib\spring-a
+ op-6.0.8.jar lib\jackson-module-parameter-names-2.14.2.jar lib\spring-b
+ oot-starter-log4j2-3.0.6.jar lib\log4j-api-2.19.0.jar lib\spring-boot-s
+ tarter-tomcat-3.0.6.jar lib\spring-web-6.0.8.jar lib\jackson-annotation
+ s-2.14.2.jar lib\jackson-datatype-jsr310-2.14.2.jar lib\log4j-slf4j2-im
+ pl-2.19.0.jar lib\jackson-datatype-jdk8-2.14.2.jar lib\spring-boot-3.0.
+ 6.jar
 
