@@ -5,10 +5,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -52,6 +49,8 @@ public class Controller
         requestLogger.info("Incoming request | #"+ counter +" | resource: /todo | HTTP Verb POST");
         counter++;
 
+        todoLogger.info("Creating new TODO with Title ["+title+"]");
+
         if(Utilities.checkIfExistByTitle(todoList,title))
         {
             String errorMessage="Error: TODO with the title " + title+ " already exists in the system";
@@ -68,9 +67,9 @@ public class Controller
             requestLogger.debug("request #"+counter+" duration: "+(System.currentTimeMillis()-start)+"ms");
             return new ResponseEntity<>(bodyResponse, HttpStatus.CONFLICT);
         }
+
         Todo todo =new Todo(title,requestBody.get("content"),dueDate);
 
-        todoLogger.info("Creating new TODO with Title ["+title+"]");
         todoLogger.debug("Currently there are "+todoList.size()+" Todos in the system. " +
                 "New TODO will be assigned with id "+todo.getId());
 
@@ -114,14 +113,15 @@ public class Controller
 
 
     @GetMapping("/todo/content")
-    public ResponseEntity<List<Todo>> getTODOsData(@RequestParam String status,@RequestParam(required = false) String sortBy)
+    public ResponseEntity<Map<String,List<Todo>>> getTODOsData(@RequestParam String status,@RequestParam(required = false) String sortBy)
     {
         long start=System.currentTimeMillis();
-        List<Todo> bodyResponse=new ArrayList<>();
+        List<Todo> res =new ArrayList<>();
 
         ThreadContext.put("counter", String.valueOf(counter));
         requestLogger.info("Incoming request | #"+ counter +" | resource: /todo/content | HTTP Verb GET");
         counter++;
+
 
         if( ( !Utilities.STATUSES.contains(status) && !status.equals("ALL") ) || ( sortBy!=null && !Utilities.SORTS_BY.contains(sortBy) ) )
         {
@@ -129,18 +129,18 @@ public class Controller
         }
 
         if(status.equals("ALL"))
-            bodyResponse=todoList;
+            res =todoList;
         else
-            bodyResponse=Utilities.getTODO(todoList,status);
+            res =Utilities.getTODO(todoList,status);
 
         if(sortBy==null||sortBy.equals("ID"))
-            Utilities.SortById(bodyResponse);
+            Utilities.SortById(res);
         else
         {
             if (sortBy.equals("TITLE"))
-                Utilities.SortByTitle(bodyResponse);
+                Utilities.SortByTitle(res);
             if (sortBy.equals("DUE_DATE"))
-                Utilities.SortByDate(bodyResponse);
+                Utilities.SortByDate(res);
         }
 
         if(sortBy==null)
@@ -148,8 +148,10 @@ public class Controller
 
         todoLogger.info("Extracting todos content. Filter: "+status+" | Sorting by: "+sortBy);
         todoLogger.debug("There are a total of "+todoList.size()+" todos in the system. " +
-                "The result holds "+bodyResponse.size()+" todos");
+                "The result holds "+ res.size()+" todos");
         requestLogger.debug("request #"+counter+" duration: "+(System.currentTimeMillis()-start)+"ms");
+        Map<String,List<Todo>> bodyResponse=new HashMap<>();
+        bodyResponse.put("result",res);
         return new ResponseEntity<>(bodyResponse,HttpStatus.OK);
     }
 
@@ -200,6 +202,8 @@ public class Controller
         requestLogger.info("Incoming request | #"+ counter +" | resource: /todo | HTTP Verb DELETE");
         counter++;
 
+        todoLogger.info("Removing todo id "+id);
+
         if(todo==null)
         {
             bodyResponse.put("errorMessage","Error: no such TODO with id "+id);
@@ -207,7 +211,6 @@ public class Controller
             requestLogger.debug("request #"+counter+" duration: "+(System.currentTimeMillis()-start)+"ms");
             return new ResponseEntity<>(bodyResponse,HttpStatus.NOT_FOUND);
         }
-        todoLogger.info("Removing todo id "+id);
         todoList.remove(todo);
         todoLogger.debug("After removing todo id ["+id+"] there are "+todoList.size()+" TODOs in the system");
         bodyResponse.put("result",todoList.size());
