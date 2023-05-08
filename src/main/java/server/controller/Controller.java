@@ -70,7 +70,7 @@ public class Controller
 
         Todo todo =new Todo(title,requestBody.get("content"),dueDate);
 
-        todoLogger.debug("Currently there are "+todoList.size()+" Todos in the system. " +
+        todoLogger.debug("Currently there are "+todoList.size()+" TODOs in the system. " +
                 "New TODO will be assigned with id "+todo.getId());
 
         todoList.add(todo);

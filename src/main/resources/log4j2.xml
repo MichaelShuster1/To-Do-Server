@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN" monitorInterval="30">
     <Properties>
-        <Property name="LOG_PATTERN">%d{dd-MM-yyyy HH:mm:ss.sss} %p: %m | request #%X{counter}%n</Property>
+        <Property name="LOG_PATTERN">%d{dd-MM-yyyy HH:mm:ss.sss} %p: %m | request #%X{counter} %n</Property>
     </Properties>
 
     <Appenders>
