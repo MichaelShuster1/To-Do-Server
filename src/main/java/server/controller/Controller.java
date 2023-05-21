@@ -49,7 +49,7 @@ public class Controller
         requestLogger.info("Incoming request | #"+ counter +" | resource: /todo | HTTP Verb POST");
         counter++;
 
-        todoLogger.info("Creating new TODO with Title ["+title+"]");
+
 
         if(Utilities.checkIfExistByTitle(todoList,title))
         {
@@ -67,6 +67,8 @@ public class Controller
             requestLogger.debug("request #"+counter+" duration: "+(System.currentTimeMillis()-start)+"ms");
             return new ResponseEntity<>(bodyResponse, HttpStatus.CONFLICT);
         }
+
+        todoLogger.info("Creating new TODO with Title ["+title+"]");
 
         Todo todo =new Todo(title,requestBody.get("content"),dueDate);
 
@@ -205,7 +207,6 @@ public class Controller
         requestLogger.info("Incoming request | #"+ counter +" | resource: /todo | HTTP Verb DELETE");
         counter++;
 
-        todoLogger.info("Removing todo id "+id);
 
         if(todo==null)
         {
@@ -214,6 +215,8 @@ public class Controller
             requestLogger.debug("request #"+counter+" duration: "+(System.currentTimeMillis()-start)+"ms");
             return new ResponseEntity<>(bodyResponse,HttpStatus.NOT_FOUND);
         }
+
+        todoLogger.info("Removing todo id "+id);
         todoList.remove(todo);
         todoLogger.debug("After removing todo id ["+id+"] there are "+todoList.size()+" TODOs in the system");
         bodyResponse.put("result",todoList.size());
