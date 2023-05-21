@@ -84,6 +84,11 @@ public class Controller
     @GetMapping("/todo/size")
     public ResponseEntity<Map<String,Integer>> getTODOsCount(@RequestParam String status)
     {
+        if( !status.equals("ALL") && !Utilities.STATUSES.contains(status))
+        {
+            return new ResponseEntity<>(null,HttpStatus.BAD_REQUEST);
+        }
+
         long start=System.currentTimeMillis();
         Map<String,Integer> bodyResponse=new HashMap<>();
 
@@ -106,8 +111,7 @@ public class Controller
             requestLogger.debug("request #"+counter+" duration: "+(System.currentTimeMillis()-start)+"ms");
             return responseEntity;
         }
-
-        return new ResponseEntity<>(null,HttpStatus.BAD_REQUEST);
+        return null;
     }
 
 
@@ -115,6 +119,11 @@ public class Controller
     @GetMapping("/todo/content")
     public ResponseEntity<Map<String,List<Todo>>> getTODOsData(@RequestParam String status,@RequestParam(required = false) String sortBy)
     {
+        if( ( !Utilities.STATUSES.contains(status) && !status.equals("ALL") ) || ( sortBy!=null && !Utilities.SORTS_BY.contains(sortBy) ) )
+        {
+            return new ResponseEntity<>(null,HttpStatus.BAD_REQUEST);
+        }
+
         long start=System.currentTimeMillis();
         List<Todo> res =new ArrayList<>();
 
@@ -122,11 +131,6 @@ public class Controller
         requestLogger.info("Incoming request | #"+ counter +" | resource: /todo/content | HTTP Verb GET");
         counter++;
 
-
-        if( ( !Utilities.STATUSES.contains(status) && !status.equals("ALL") ) || ( sortBy!=null && !Utilities.SORTS_BY.contains(sortBy) ) )
-        {
-            return new ResponseEntity<>(null,HttpStatus.BAD_REQUEST);
-        }
 
         if(status.equals("ALL"))
             res =todoList;
@@ -158,6 +162,10 @@ public class Controller
     @PutMapping("/todo")
     public ResponseEntity<Map<String,String>> UpdateTODOStatus(@RequestParam Integer id,@RequestParam String status)
     {
+        if(!Utilities.STATUSES.contains(status)) {
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
+
         long start=System.currentTimeMillis();
         ThreadContext.put("counter", String.valueOf(counter));
         requestLogger.info("Incoming request | #"+ counter +" | resource: /todo | HTTP Verb PUT");
@@ -165,15 +173,10 @@ public class Controller
 
         todoLogger.info("Update TODO id ["+id+"] state to "+status);
 
-        if(!Utilities.STATUSES.contains(status)) {
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-        }
-
-        Todo todo;
         String oldStatus;
         Map<String,String> bodyResponse=new HashMap<>();
 
-        todo=Utilities.FindTODObyId(todoList,id);
+        Todo todo=Utilities.FindTODObyId(todoList,id);
 
         if(todo==null)
         {
