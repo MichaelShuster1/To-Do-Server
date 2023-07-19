@@ -1,5 +1,5 @@
 # To-Do-Server
-A to-do web app that provides the ability to manage tasks and to-dos
+A to-do web app that provides the ability to manage tasks and to-dos, implemented in Spring Boot Java
 
 # Features
 1)Create To-Do: Add new tasks to your to-do list effortlessly. Enter the task details, set due dates, and save them for future reference.
